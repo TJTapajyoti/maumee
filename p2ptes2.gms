@@ -14,6 +14,7 @@ $offsymxref
 $offsymlist
 $offinclude
 
+$include baronlinear.gms
 option limrow = 0;
 
 option limcol = 0;
@@ -23,11 +24,11 @@ option sysout = off;
 
 Sets
 
-TM Technology matrix counter /1*763/
+TM Technology matrix counter /1*518/
 VCF(TM) Farm value chain scale counter /1*252/
 VCS(TM) Storage facility value chain counter /253*259/
 VCC(TM) Consumers /260*511/
-EQB(TM) Refinery equipment scale /512*763/;
+EQB(TM) Refinery equipment scale /512*518/;
 
 alias(VCF,VCF1,b);
 alias(TM,TM1);
@@ -35,8 +36,10 @@ alias(VCC,VCC1);
 
 Sets
 
-m months    /1*7/
+m months    /1*10/
 y years     /1*8/;
+*You can change timetot to zero to reduce ecosystems. no other things are touched.
+Scalar timetot  /10/;
 
 
 **************CALLING GDX FUNCTIONS TO READ THE EXCEL FILES AND GET DATA***********************************************************
@@ -78,12 +81,59 @@ $LOAD Level4
 $GDXIN
 
 
+Parameter Level6(VCF,VCS) store data temporarily
+
+*******************************Read the Value chain scale Make matrix**************************************************************
+*$CALL GDXXRW.EXE farm_to_storage.xlsx par=Level6 rng=Sheet1!A1:H253
+
+$GDXIN farm_to_storage.gdx
+$LOAD Level6
+$GDXIN
+
+
+
+Parameter Level9(VCS,EQB) store data temporarily
+
+*******************************Read the Value chain scale Make matrix**************************************************************
+*$CALL GDXXRW.EXE storage_to_refinery.xlsx par=Level9 rng=Sheet1!A1:H8
+
+$GDXIN storage_to_refinery.gdx
+$LOAD Level9
+$GDXIN
+
+Parameter Level13(EQB,VCC) store data temporarily
+
+*******************************Read the Value chain scale Make matrix**************************************************************
+*$CALL GDXXRW.EXE refinery_to_consumer.xlsx par=Level13 rng=Sheet1!A1:IS8
+
+$GDXIN refinery_to_consumer.gdx
+$LOAD Level13
+$GDXIN
+
+
+
+
+
+
+
+
 Parameter
 
 phos_corn(m,b) phosphorus runoff matrix
 yield_corn(m,b) yield corn
 nitrogen_corn(m,b) nitrogen runoff
-ethanol_demand(VCC,VCC1) ethanol demand;
+ethanol_demand(VCC,VCC1) ethanol demand
+trans_cost2(VCF,VCS) transportation mode 2 truck
+eq_trans_cost2(VCS,EQB) transportation mode 2 truck
+eq_downstream(EQB,VCC) transportation model truck for ethanol;
+
+*In per $/tonne values
+trans_cost2(VCF,VCS) = level6(VCF,VCS);
+
+*In per $/tonne values
+eq_trans_cost2(VCS,EQB) = level9(VCS,EQB);
+eq_downstream(EQB,VCC) = Level13(EQB,VCC);
+
 
 
 *Storing the data in the parameters
@@ -171,12 +221,6 @@ binary variable z_r_2(EQB);
 
 Equation refinery1,refinery2,refinery3,refinery4;
 
-*REMOVE THIS PART
-variable Fcorn,ethanol;
-Fcorn.fx = 18;
-
-ethanol.fx = 6;
-
 
 equation refinery1_2;
 *Modelling a toy refinery
@@ -187,7 +231,7 @@ refinery1_2(m,EQB,EQB)$(Ord(m) ge 3).. sum[VCS,storage_refinery_X(m,VCS,EQB)] =E
 *#Non diagonals are zero
 refinery2(m,EQB,EQB1)$(Ord(EQB) ne Ord(EQB1)).. refinery_X(m,EQB,EQB1) =E= 0;
 *#CHANGE_MONTH
-*6000 is in kg 
+*6000 is in kg
 *Existence of refinery
 refinery3(m,EQB)$(Ord(m) le 2).. sum[EQB1,refinery_X(m,EQB,EQB1)] =E= Ethanol*86400*30/2500*z_r_1(EQB);
 refinery4(m,EQB)$(Ord(m) ge 3).. sum[EQB1,refinery_X(m,EQB,EQB1)] =E= Ethanol*86400*30/2500*z_r_2(EQB);
@@ -244,25 +288,25 @@ parameter total_production(VCF);
 total_production(VCF) = sum[m,yield_corn(m,VCF)];
 
 ******Adding ecosystems*****
-*Subasin 1 as 195 km2 of wetland area. 
-*Subbasin 4 has 107.69 km2 of wetland area. 
-*Thus only these two subbasins can treat runoff. 
+*Subasin 1 as 195 km2 of wetland area.
+*Subbasin 4 has 107.69 km2 of wetland area.
+*Thus only these two subbasins can treat runoff.
 *1.5 gP/m2/year
 positive variable p_takeup(VCF);
 *p_takeup.FX(VCF)$(Ord(VCF) ne 1 and Ord(VCF) ne 4) = 0;
 
 equation ecosystem1,ecosystem2,ecosystem3,ecosystem4,ecosystem5,ecosystem6,ecosystem7,ecosystem8,ecosystem9,ecosystem10;
 
-ecosystem1.. p_takeup('1')*total_production('1') =E= corn_buy('1')*22*1.5*1000*8; 
-ecosystem2.. p_takeup('9')*total_production('9') =E= corn_buy('9')*23*1.5*1000*8;
-ecosystem3.. p_takeup('10')*total_production('10') =E= corn_buy('10')*9*1.5*1000*8;
-ecosystem4.. p_takeup('17')*total_production('17') =E= corn_buy('17')*14.8*1.5*1000*8;
-ecosystem5.. p_takeup('18')*total_production('18') =E= corn_buy('18')*9.8*1.5*1000*8;
-ecosystem6.. p_takeup('19')*total_production('19') =E= corn_buy('19')*16.55*1.5*1000*8;
-ecosystem7.. p_takeup('20')*total_production('20') =E= corn_buy('20')*14.6*1.5*1000*8;
-ecosystem8.. p_takeup('21')*total_production('21') =E= corn_buy('21')*11.1*1.5*1000*8;
-ecosystem9.. p_takeup('94')*total_production('94') =E= corn_buy('94')*21*1.5*1000*8;
-ecosystem10.. p_takeup('96')*total_production('96') =E= corn_buy('96')*13*1.5*1000*8;
+ecosystem1.. p_takeup('1')*total_production('1') =E= corn_buy('1')*22*0.5*1000*timetot/3;
+ecosystem2.. p_takeup('9')*total_production('9') =E= corn_buy('9')*23*0.5*1000*timetot/3;
+ecosystem3.. p_takeup('10')*total_production('10') =E= corn_buy('10')*9*0.5*1000*timetot/3;
+ecosystem4.. p_takeup('17')*total_production('17') =E= corn_buy('17')*14.8*0.5*1000*timetot/3;
+ecosystem5.. p_takeup('18')*total_production('18') =E= corn_buy('18')*9.8*0.5*1000*timetot/3;
+ecosystem6.. p_takeup('19')*total_production('19') =E= corn_buy('19')*16.55*0.5*1000*timetot/3;
+ecosystem7.. p_takeup('20')*total_production('20') =E= corn_buy('20')*14.6*0.5*1000*timetot/3;
+ecosystem8.. p_takeup('21')*total_production('21') =E= corn_buy('21')*11.1*0.5*1000*timetot/3;
+ecosystem9.. p_takeup('94')*total_production('94') =E= corn_buy('94')*21*0.5*1000*timetot/3;
+ecosystem10.. p_takeup('96')*total_production('96') =E= corn_buy('96')*13*0.5*1000*timetot/3;
 
 
 
@@ -279,16 +323,52 @@ variable final_p_runoff;
 equation impact1,impact2,impact3;
 
 impact1(VCF).. p_runoff(VCF)*total_production(VCF) =E= corn_buy(VCF)*total_p_runoff(VCF);
-impact3(VCF).. p_runoff2(VCF) =G= p_runoff(VCF) - p_takeup(VCF);
+*impact3(VCF).. p_runoff2(VCF) =G= p_runoff(VCF) - p_takeup(VCF);
+impact3(VCF).. p_runoff2(VCF) =G= p_runoff(VCF);
+
 
 *Adding the phosphorus runoff from the spillover corn in the first year. So that spillover is minimum
 *0.038 kg P per tonne of Corn yield.
 impact2.. final_p_runoff =E= sum[VCF,p_runoff2(VCF)] + sum[m,sum[VCS,spillover(m,VCS)]]*0.038 ;
 
 ******Adding ecosystems*****
-*Subasin 1 as 195 km2 of wetland area. 
-*Subbasin 4 has 107.69 km2 of wetland area. 
+*Subasin 1 as 195 km2 of wetland area.
+*Subbasin 4 has 107.69 km2 of wetland area.
 *Thus only these two subbasins can treat runoff.
+
+
+
+
+**********************************Transportation*************************************************
+positive Variable transportation1(m,VCF,VCS),transportation2(m,VCS,EQB),transportation3(m,EQB,VCC);
+equation transport1,transport2,transport3;
+
+
+
+
+transport1(m,VCF,VCS).. transportation1(m,VCF,VCS) =E= farm_storage_X(m,VCF,VCS)*trans_cost2(VCF,VCS);
+
+
+transport2(m,VCS,EQB).. transportation2(m,VCS,EQB) =E= storage_refinery_X(m,VCS,EQB)*eq_trans_cost2(VCS,EQB);
+
+*Have to add the spillover transportation also for the first year.
+transport3(m,EQB,VCC).. transportation3(m,EQB,VCC) =E= refinery_consumer_X(m,EQB,VCC)*eq_downstream(EQB,VCC);
+
+variable t_obj;
+equation trns;
+
+trns.. t_obj =E= sum[m,sum[VCF,sum[VCS,transportation1(m,VCF,VCS)]]]+sum[m,sum[VCS,sum[EQB,transportation2(m,VCS,EQB)]]]+sum[m,sum[EQB,sum[VCC,transportation3(m,EQB,VCC)]]]+sum[m,sum[VCS,spillover(m,VCS)]]*0.083*200;
+
+
+
+
+
+
+
+
+
+
+
 
 variable dummy;
 equation dum;
@@ -306,10 +386,22 @@ TRANS.optFile = 1
 
 option MINLP = BARON;
 
-Solve TRANS Using MINLP Minimizing final_p_runoff;
-*Solve TRANS Using MINLP Minimizing t_obj;
+*Solve TRANS Using MINLP Minimizing final_p_runoff;
+Solve TRANS Using MINLP Minimizing t_obj;
 *Solve TRANS Using MINLP minimizing dummy;
 
+display corn_buy.L;
+display total_p_runoff;
+display p_runoff.L;
+display p_runoff2.L;
+display p_takeup.L;
+display final_p_runoff.L;
+
+parameter spillrunoff;
+
+spillrunoff = sum[m,sum[VCS,spillover.L(m,VCS)]]*0.038;
+
+display spillrunoff;
 
 
 Parameter p2px(m,TM,TM1);
