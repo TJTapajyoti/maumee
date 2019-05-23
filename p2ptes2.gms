@@ -152,8 +152,9 @@ yield_corn(m,b) = Level1(m,b);
 nitrogen_corn(m,b) = Level2(m,b);
 *Phosphorus is in kg
 phos_corn(m,b) = Level3(m,b);
-*Ethanol Demand is in Kg
-ethanol_demand(VCC,VCC1) = Level4(VCC,VCC1)/1000;
+*Ethanol Demand is in tonnes
+*Multipled by 4 to make it for 4 months rather than a month. 
+ethanol_demand(VCC,VCC1) = Level4(VCC,VCC1)/1000*4;
 
 *Ecosystem Area km2
 ecosystem(m,b) = Level5(m,b);
@@ -240,15 +241,15 @@ equation refinery1_2;
 *Modelling a toy refinery
 *#Refinery equipment scale model
 *This is going to be in the order of 18000 tonnes. Ethanol demand is in tonnes. So this is also in tonnes.
-refinery1(m,EQB,EQB)$(Ord(m) le 2).. sum[VCS,storage_refinery_X(m,VCS,EQB)] =E= Fcorn*86400*30/2500*z_r_1(EQB);
-refinery1_2(m,EQB,EQB)$(Ord(m) ge 3).. sum[VCS,storage_refinery_X(m,VCS,EQB)] =E= Fcorn*86400*30/2500*z_r_2(EQB);
+refinery1(m,EQB,EQB)$(Ord(m) le 2).. sum[VCS,storage_refinery_X(m,VCS,EQB)] =E= Fcorn*86400*120/2000*z_r_1(EQB);
+refinery1_2(m,EQB,EQB)$(Ord(m) ge 3).. sum[VCS,storage_refinery_X(m,VCS,EQB)] =E= Fcorn*86400*120/2000*z_r_2(EQB);
 *#Non diagonals are zero
 refinery2(m,EQB,EQB1)$(Ord(EQB) ne Ord(EQB1)).. refinery_X(m,EQB,EQB1) =E= 0;
 *#CHANGE_MONTH
 *6000 is in kg
 *Existence of refinery
-refinery3(m,EQB)$(Ord(m) le 2).. sum[EQB1,refinery_X(m,EQB,EQB1)] =E= Ethanol*86400*30/2500*z_r_1(EQB);
-refinery4(m,EQB)$(Ord(m) ge 3).. sum[EQB1,refinery_X(m,EQB,EQB1)] =E= Ethanol*86400*30/2500*z_r_2(EQB);
+refinery3(m,EQB)$(Ord(m) le 2).. sum[EQB1,refinery_X(m,EQB,EQB1)] =E= Ethanol*86400*120/2000*z_r_1(EQB);
+refinery4(m,EQB)$(Ord(m) ge 3).. sum[EQB1,refinery_X(m,EQB,EQB1)] =E= Ethanol*86400*120/2000*z_r_2(EQB);
 
 
 
