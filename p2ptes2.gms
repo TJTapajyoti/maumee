@@ -112,6 +112,14 @@ $GDXIN
 
 
 
+Parameter Level5(m,b) store data temporarily
+
+*******************************Read the Value chain scale Make matrix**************************************************************
+*$CALL GDXXRW.EXE wetland_reduced.xlsx par=Level5 rng=Sheet1!A1:IS23
+
+$GDXIN wetland_reduced.gdx
+$LOAD Level5
+$GDXIN
 
 
 
@@ -120,6 +128,7 @@ $GDXIN
 Parameter
 
 phos_corn(m,b) phosphorus runoff matrix
+ecosystem(m,b)  ecossytem matrix
 yield_corn(m,b) yield corn
 nitrogen_corn(m,b) nitrogen runoff
 ethanol_demand(VCC,VCC1) ethanol demand
@@ -145,6 +154,11 @@ nitrogen_corn(m,b) = Level2(m,b);
 phos_corn(m,b) = Level3(m,b);
 *Ethanol Demand is in Kg
 ethanol_demand(VCC,VCC1) = Level4(VCC,VCC1)/1000;
+
+*Ecosystem Area km2
+ecosystem(m,b) = Level5(m,b);
+
+
 
 
 *The corn production part of the technology matrix being declared as a parameter
@@ -267,7 +281,7 @@ tactical2(VCS).. z_s_1(VCS) =E= z_s_2(VCS);
 positive variable spillover(m,VCS);
 *spillover.FX(m,VCS) = 0;
 equation storage7;
-storage7(m,VCS)$(ord(m) ge 2).. sum[VCF,farm_storage_X(m,VCF,VCS)] + (1-0.15)*sum[VCS1,storage_X(m-1,VCS,VCS1)] + spillover(m,VCS) =E= sum[VCS1,storage_X(m,VCS,VCS1)]+sum[EQB,storage_refinery_X(m,VCS,EQB)];
+storage7(m,VCS)$(ord(m) ge 2).. sum[VCF,farm_storage_X(m,VCF,VCS)] + (1-0.45)*sum[VCS1,storage_X(m-1,VCS,VCS1)] + spillover(m,VCS) =E= sum[VCS1,storage_X(m,VCS,VCS1)]+sum[EQB,storage_refinery_X(m,VCS,EQB)];
 
 *First year equation only
 *This equation is used to make sure that in first year the storage is not full and transporation takes place also.
@@ -284,6 +298,8 @@ equation buying_corn;
 *Adding spillover nutrient runoff
 buying_corn(VCF).. corn_buy(VCF) =E= sum[m,sum[VCS,farm_storage_X(m,VCF,VCS)]];
 
+
+
 parameter total_production(VCF);
 total_production(VCF) = sum[m,yield_corn(m,VCF)];
 
@@ -295,21 +311,23 @@ total_production(VCF) = sum[m,yield_corn(m,VCF)];
 positive variable p_takeup(VCF);
 *p_takeup.FX(VCF)$(Ord(VCF) ne 1 and Ord(VCF) ne 4) = 0;
 
-equation ecosystem1,ecosystem2,ecosystem3,ecosystem4,ecosystem5,ecosystem6,ecosystem7,ecosystem8,ecosystem9,ecosystem10;
+equation ecosystem2,ecosystem7,ecosystem3;
+*equation ecosystem1;
+*ecosystem1(m,VCF).. p_takeup(m,VCF)*yield_corn(m,VCF) =E= corn_buy(m,VCF)*ecosystem(m,VCF)*0.5*1000*timetot/3;
 
-ecosystem1.. p_takeup('1')*total_production('1') =E= corn_buy('1')*22*0.5*1000*timetot/3;
-ecosystem2.. p_takeup('9')*total_production('9') =E= corn_buy('9')*23*0.5*1000*timetot/3;
-ecosystem3.. p_takeup('10')*total_production('10') =E= corn_buy('10')*9*0.5*1000*timetot/3;
-ecosystem4.. p_takeup('17')*total_production('17') =E= corn_buy('17')*14.8*0.5*1000*timetot/3;
-ecosystem5.. p_takeup('18')*total_production('18') =E= corn_buy('18')*9.8*0.5*1000*timetot/3;
-ecosystem6.. p_takeup('19')*total_production('19') =E= corn_buy('19')*16.55*0.5*1000*timetot/3;
-ecosystem7.. p_takeup('20')*total_production('20') =E= corn_buy('20')*14.6*0.5*1000*timetot/3;
-ecosystem8.. p_takeup('21')*total_production('21') =E= corn_buy('21')*11.1*0.5*1000*timetot/3;
-ecosystem9.. p_takeup('94')*total_production('94') =E= corn_buy('94')*21*0.5*1000*timetot/3;
-ecosystem10.. p_takeup('96')*total_production('96') =E= corn_buy('96')*13*0.5*1000*timetot/3;
+*ecosystem1.. p_takeup('1')*total_production('1') =E= corn_buy('1')*22*0.5*1000*timetot/3;
+ecosystem2.. p_takeup('9')*total_production('9') =E= corn_buy('9')*6.78*0.5*1000*timetot/3;
+*ecosystem3.. p_takeup('10')*total_production('10') =E= corn_buy('10')*9*0.5*1000*timetot/3;
+*ecosystem4.. p_takeup('17')*total_production('17') =E= corn_buy('17')*14.8*0.5*1000*timetot/3;
+*ecosystem5.. p_takeup('18')*total_production('18') =E= corn_buy('18')*9.8*0.5*1000*timetot/3;
+*ecosystem6.. p_takeup('19')*total_production('19') =E= corn_buy('19')*16.55*0.5*1000*timetot/3;
+ecosystem7.. p_takeup('20')*total_production('20') =E= corn_buy('20')*4.11*0.5*1000*timetot/3;
+*ecosystem8.. p_takeup('21')*total_production('21') =E= corn_buy('21')*11.1*0.5*1000*timetot/3;
+*ecosystem9.. p_takeup('94')*total_production('94') =E= corn_buy('94')*21*0.5*1000*timetot/3;
+*ecosystem10.. p_takeup('96')*total_production('96') =E= corn_buy('96')*13*0.5*1000*timetot/3;
 
 
-
+ecosystem3(VCF)$(Ord(VCF) ne 9 and Ord(VCF) ne 20).. p_takeup(VCF) =E= 0;
 
 
 
@@ -323,8 +341,8 @@ variable final_p_runoff;
 equation impact1,impact2,impact3;
 
 impact1(VCF).. p_runoff(VCF)*total_production(VCF) =E= corn_buy(VCF)*total_p_runoff(VCF);
-*impact3(VCF).. p_runoff2(VCF) =G= p_runoff(VCF) - p_takeup(VCF);
-impact3(VCF).. p_runoff2(VCF) =G= p_runoff(VCF);
+impact3(VCF).. p_runoff2(VCF) =G= p_runoff(VCF) - p_takeup(VCF);
+*impact3(VCF).. p_runoff2(VCF) =G= p_runoff(VCF);
 
 
 *Adding the phosphorus runoff from the spillover corn in the first year. So that spillover is minimum
@@ -386,8 +404,8 @@ TRANS.optFile = 1
 
 option MINLP = BARON;
 
-*Solve TRANS Using MINLP Minimizing final_p_runoff;
-Solve TRANS Using MINLP Minimizing t_obj;
+Solve TRANS Using MINLP Minimizing final_p_runoff;
+*Solve TRANS Using MINLP Minimizing t_obj;
 *Solve TRANS Using MINLP minimizing dummy;
 
 display corn_buy.L;
@@ -395,11 +413,12 @@ display total_p_runoff;
 display p_runoff.L;
 display p_runoff2.L;
 display p_takeup.L;
+display ecosystem;
 display final_p_runoff.L;
 
 parameter spillrunoff;
 
-spillrunoff = sum[m,sum[VCS,spillover.L(m,VCS)]]*0.038;
+spillrunoff = sum[m,sum[VCS,spillover.L(m,VCS)]]*0.068;
 
 display spillrunoff;
 
