@@ -71,10 +71,10 @@ $GDXIN phos_corn_reduced.gdx
 $LOAD Level3
 $GDXIN
 
-Parameter Level4(VCC,VCC1) store data temporarily
+Parameter Level4(m,VCC) store data temporarily
 
 *******************************Read the Value chain scale Make matrix**************************************************************
-*$CALL GDXXRW.EXE ethanol_demand.xlsx par=Level4 rng=Sheet1!A1:IS253
+*$CALL GDXXRW.EXE ethanol_demand.xlsx par=Level4 rng=Sheet1!A1:IS13
 
 $GDXIN ethanol_demand.gdx
 $LOAD Level4
@@ -131,7 +131,7 @@ phos_corn(m,b) phosphorus runoff matrix
 ecosystem(m,b)  ecossytem matrix
 yield_corn(m,b) yield corn
 nitrogen_corn(m,b) nitrogen runoff
-ethanol_demand(VCC,VCC1) ethanol demand
+ethanol_demand(m,VCC) ethanol demand
 trans_cost2(VCF,VCS) transportation mode 2 truck
 eq_trans_cost2(VCS,EQB) transportation mode 2 truck
 eq_downstream(EQB,VCC) transportation model truck for ethanol;
@@ -154,7 +154,7 @@ nitrogen_corn(m,b) = Level2(m,b);
 phos_corn(m,b) = Level3(m,b);
 *Ethanol Demand is in tonnes
 *Multipled by 4 to make it for 4 months rather than a month. 
-ethanol_demand(VCC,VCC1) = Level4(VCC,VCC1)/1000*4;
+ethanol_demand(m,VCC) = Level4(m,VCC);
 
 *Ecosystem Area km2
 ecosystem(m,b) = Level5(m,b);
@@ -258,7 +258,7 @@ positive variable refinery_consumer_X(m,EQB,VCC);
 
 *Demand of ethanol from refinery;
 Equation refinery5;
-refinery5(m,VCC).. sum[EQB,refinery_consumer_X(m,EQB,VCC)] =E= ethanol_demand(VCC,VCC);
+refinery5(m,VCC).. sum[EQB,refinery_consumer_X(m,EQB,VCC)] =E= ethanol_demand(m,VCC);
 Equation refinery6;
 refinery6(m,EQB).. sum[VCC,refinery_consumer_X(m,EQB,VCC)] =L= refinery_X(m,EQB,EQB);
 
@@ -419,7 +419,7 @@ display final_p_runoff.L;
 
 parameter spillrunoff;
 
-spillrunoff = sum[m,sum[VCS,spillover.L(m,VCS)]]*0.068;
+spillrunoff = sum[m,sum[VCS,spillover.L(m,VCS)]]*0.038;
 
 display spillrunoff;
 
@@ -431,7 +431,7 @@ p2px(m,VCS,VCS1) = storage_X.L(m,VCS,VCS1);
 p2px(m,EQB,EQB1) = refinery_X.L(m,EQB,EQB1);
 p2px(m,VCS,EQB) = storage_refinery_X.L(m,VCS,EQB);
 p2px(m,EQB,VCC) = refinery_consumer_X.L(m,EQB,VCC);
-p2px(m,VCC,VCC1) = ethanol_demand(VCC,VCC1);
+p2px(m,VCC,VCC) = ethanol_demand(m,VCC);
 
 
 parameter total_corn_flow;
@@ -441,13 +441,44 @@ display total_corn_flow;
 parameter total_corn_production(m);
 total_corn_production(m) = sum[VCF,sum[VCF1,corn_production_X(m,VCF,VCF1)]]
 
-parameter total_corn_demand(m);
-total_corn_demand(m) = sum[VCS,sum[EQB,storage_refinery_X.L(m,VCS,EQB)]]
+parameter corn_demand(m);
+corn_demand(m) = sum[VCS,sum[EQB,storage_refinery_X.L(m,VCS,EQB)]]
 
 parameter deficit(m);
-deficit(m) = total_corn_production(m) - total_corn_demand(m);
+deficit(m) = total_corn_production(m) - corn_demand(m);
+
+parameter total_corn_demand;
+total_corn_demand = sum[m,corn_demand(m)];
+
+display total_corn_demand;
+
+parameter excess_demand;
+excess_demand = total_corn_demand - total_corn_flow;
 
 
+parameter runoff_from_farms;
+runoff_from_farms = final_p_runoff.L - spillrunoff;
+
+display excess_demand,runoff_from_farms;
+
+
+parameter spillflow;
+
+spillflow =  sum[m,sum[VCS,spillover.L(m,VCS)]];
+
+display spillflow;
+
+display total_p_runoff;
+
+display total_production;
+
+display corn_buy.L;
+
+parameter p_run_fac(VCF);
+*kg P/tonne
+p_run_fac(VCF) = total_p_runoff(VCF)/total_production(VCF);
+
+display p_run_fac;
 
 file fxx /storage.txt/;
 
