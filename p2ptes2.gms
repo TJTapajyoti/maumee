@@ -36,7 +36,7 @@ alias(VCC,VCC1);
 
 Sets
 
-m months    /1*10/
+m quarters    /1*10/
 y years     /1*8/;
 *You can change timetot to zero to reduce ecosystems. no other things are touched.
 Scalar timetot  /10/;
@@ -122,19 +122,285 @@ $LOAD Level5
 $GDXIN
 
 
+Parameter Level10(VCS,EQB) store data temporarily
+
+*******************************Read the Value chain scale Make matrix**************************************************************
+*$CALL GDXXRW.EXE storage_to_refinery_2.xlsx par=Level10 rng=Sheet1!A1:H8
+
+$GDXIN storage_to_refinery_2.gdx
+$LOAD Level10
+$GDXIN
+
 
 
 
 Parameter
-
 phos_corn(m,b) phosphorus runoff matrix
 ecosystem(m,b)  ecossytem matrix
 yield_corn(m,b) yield corn
 nitrogen_corn(m,b) nitrogen runoff
 ethanol_demand(m,VCC) ethanol demand
 trans_cost2(VCF,VCS) transportation mode 2 truck
+eq_trans_cost1(VCS,EQB) transportation mode 1 train_truck
 eq_trans_cost2(VCS,EQB) transportation mode 2 truck
 eq_downstream(EQB,VCC) transportation model truck for ethanol;
+
+*km2
+
+parameter barren_area(VCF) barren area
+/1        0.085574401
+2        0.0320904
+3        0.010187429
+4        0.116646058
+5        0.083536915
+6        0.506315206
+7        0.080480687
+8        0.046352801
+9        0.078952572
+10        0.023940457
+11        0.051955886
+12        0.194070516
+13        0
+14        0
+15        0
+16        0
+17        0
+18        0
+19        0
+20        0
+21        0
+22        0
+23        0
+24        0.006621829
+25        0.111552344
+26        0.009168686
+27        0.168601945
+28        0.019356115
+29        0
+30        0
+31        0.005093714
+32        0.130399087
+33        0.003056229
+34        0.012224914
+35        0.008659314
+36        0
+37        0
+38        0
+39        0.050427772
+40        0
+41        0
+42        0
+43        0
+44        0.410044005
+45        0.005093714
+46        0
+47        0
+48        0
+49        0
+50        0
+51        0.005603086
+52        0
+53        0.057049601
+54        0
+55        0
+56        0
+57        0
+58        0
+59        0
+60        0
+61        0
+62        0
+63        0.0035656
+64        0
+65        0
+66        0.006112457
+67        0.009678057
+68        0
+69        0
+70        0
+71        0
+72        0
+73        0
+74        0
+75        0.08863063
+76        0.000509371
+77        0
+78        0.288813603
+79        0.426853262
+80        0
+81        0.319885261
+82        0.187448688
+83        0
+84        0.017318629
+85        0.078952572
+86        0
+87        0.005093714
+88        0.013753029
+89        0.010187429
+90        0.035146629
+91        0.0035656
+92        0.026996686
+93        0.34433509
+94        0.0392216
+95        0
+96        0.042277829
+97        0.047880915
+98        0.268438746
+99        0.256213831
+100        0.101874287
+101        0.016299886
+102        0.0142624
+103        0.161470745
+104        0.006621829
+105        0.063162058
+106        0.014771772
+107        0.092705601
+108        0.396290976
+109        0.011206172
+110        0.059087086
+111        0.012734286
+112        0.023431086
+113        0.307660346
+114        0.333128918
+115        0.005093714
+116        0.009678057
+117        0
+118        0.100855544
+119        0.74928538
+120        0.005093714
+121        0.016809257
+122        0.006112457
+123        0.004074971
+124        0
+125        0
+126        0
+127        0.016809257
+128        0
+129        0
+130        0
+131        0.064180801
+132        0
+133        0
+134        0
+135        0.009168686
+136        0
+137        0
+138        0
+139        0
+140        0.008659314
+141        0.0142624
+142        0
+143        0
+144        0
+145        0
+146        0
+147        0.087611887
+148        0
+149        0
+150        0.073858858
+151        0.045334058
+152        0
+153        0.009678057
+154        0.0106968
+155        0
+156        0.004074971
+157        0
+158        0
+159        0.077424458
+160        0
+161        0
+162        0.341788232
+163        0
+164        0
+165        0
+166        0
+167        0
+168        0.630601836
+169        0.47575292
+170        0.334657032
+171        0.034127886
+172        0
+173        0
+174        0
+175        0
+176        0
+177        0
+178        0.0071312
+179        1.464442874
+180        0.917887325
+181        0.246535774
+182        0
+183        0.052465258
+184        0.011715543
+185        0.014771772
+186        0
+187        0.015281143
+188        0
+189        0
+190        0.143642744
+191        0.093724344
+192        0
+193        0.319885261
+194        0.148227087
+195        0.038202858
+196        0.056030858
+197        0.002037486
+198        0.265382517
+199        0.031581029
+200        0
+201        0.0106968
+202        0
+203        0
+204        0
+205        0.0071312
+206        0
+207        0.08863063
+208        0.105439887
+209        0
+210        0.066218286
+211        0.003056229
+212        0.012224914
+213        0.015281143
+214        0.009168686
+215        0.006621829
+216        0.017318629
+217        1.840868363
+218        0.009678057
+219        0.009168686
+220        0.012734286
+221        0.200692345
+222        0.002037486
+223        0.067746401
+224        0.0035656
+225        0.089140001
+226        0.060615201
+227        0.204257945
+228        0.007640572
+229        0.026996686
+230        0
+231        0.0142624
+232        0.028015429
+233        0.010187429
+234        0.008149943
+235        0
+236        0.288304232
+237        0.028015429
+238        0.007640572
+239        0.316319661
+240        0
+241        0.506824577
+242        0.162489488
+243        0.047880915
+244        0.051446515
+245        0.006621829
+246        0.037693486
+247        0.370822404
+248        0.406478405
+249        0.245517031
+250        0.135492802
+251        1.281578529
+252        0.052974629 /;
+
 
 *In per $/tonne values
 trans_cost2(VCF,VCS) = level6(VCF,VCS);
@@ -142,7 +408,7 @@ trans_cost2(VCF,VCS) = level6(VCF,VCS);
 *In per $/tonne values
 eq_trans_cost2(VCS,EQB) = level9(VCS,EQB);
 eq_downstream(EQB,VCC) = Level13(EQB,VCC);
-
+eq_trans_cost1(VCS,EQB) = Level10(VCS,EQB);
 
 
 *Storing the data in the parameters
@@ -170,7 +436,7 @@ CORN_production_X(m,VCF,VCF) = yield_corn(m,VCF);
 CORN_production_X(m,VCF,VCF1)$(Ord(VCF) ne Ord(VCF1)) = 0;
 
 Parameter
-Cp_coll collection capacity of storage /1000000/;
+Cp_coll collection capacity of storage /200000/;
 *Tonnes of Corn
 
 
@@ -184,6 +450,7 @@ Binary variable
 z_s_2(VCS) second_biomass_storage_location_binary;
 
 positive variable storage_X(m,VCS,VCS1);
+*Normal limits. NOthing special
 storage_X.UP(m,VCS,VCS1) = 1250000;
 
 
@@ -196,6 +463,7 @@ storage3_1(m,VCS,VCS)$(Ord(m) ge 3).. storage_x(m,VCS,VCS) =L= Cp_coll * z_s_2(V
 storage4(m,VCS,VCS1)$(Ord(VCS) ne Ord(VCS1)).. storage_x(m,VCS,VCS1) =E= 0;
 
 positive variable farm_storage_X(m,VCF,VCS);
+*Normal limits nothing special
 farm_storage_X.UP(m,VCF,VCS) = 5000000;
 
 
@@ -207,7 +475,7 @@ storage6(m,VCF).. sum[VCS,farm_storage_X(m,VCF,VCS)] =L= sum[VCF1,CORN_productio
 
 
 *Existence of storage
-*Maximum two storage units So 4 is the sum total because of two binaries added.
+*Maximum 14 storage units.Storage units are fixed in the problem
 Equation storage5;
 storage5.. sum[VCS,z_s_1(VCS)] + sum[VCS,z_s_2(VCS)] =L= 14;
 
@@ -241,6 +509,7 @@ equation refinery1_2;
 *Modelling a toy refinery
 *#Refinery equipment scale model
 *This is going to be in the order of 18000 tonnes. Ethanol demand is in tonnes. So this is also in tonnes.
+*4 months = 120 days. Biorefinery Scaled down. 
 refinery1(m,EQB,EQB)$(Ord(m) le 2).. sum[VCS,storage_refinery_X(m,VCS,EQB)] =E= Fcorn*86400*120/2000*z_r_1(EQB);
 refinery1_2(m,EQB,EQB)$(Ord(m) ge 3).. sum[VCS,storage_refinery_X(m,VCS,EQB)] =E= Fcorn*86400*120/2000*z_r_2(EQB);
 *#Non diagonals are zero
@@ -265,7 +534,7 @@ refinery6(m,EQB).. sum[VCC,refinery_consumer_X(m,EQB,VCC)] =L= refinery_X(m,EQB,
 
 
 *Constraint on Biorefinery location 2 required
-*This is required as of now to introduce a final demand to the model.
+
 equation location1;
 location1.. sum[EQB,z_r_1(EQB)] =L= 2;
 
@@ -310,25 +579,27 @@ total_production(VCF) = sum[m,yield_corn(m,VCF)];
 *Thus only these two subbasins can treat runoff.
 *1.5 gP/m2/year
 positive variable p_takeup(VCF);
-*p_takeup.FX(VCF)$(Ord(VCF) ne 1 and Ord(VCF) ne 4) = 0;
 
-equation ecosystem2,ecosystem7,ecosystem3;
-*equation ecosystem1;
-*ecosystem1(m,VCF).. p_takeup(m,VCF)*yield_corn(m,VCF) =E= corn_buy(m,VCF)*ecosystem(m,VCF)*0.5*1000*timetot/3;
+equation ecosystem1;
+*Dividing the barren area by 2 to account for other crops.
+barren_area(VCF) = barren_area(VCF)/2;
 
-*ecosystem1.. p_takeup('1')*total_production('1') =E= corn_buy('1')*22*0.5*1000*timetot/3;
-ecosystem2.. p_takeup('9')*total_production('9') =E= corn_buy('9')*6.78*0.5*1000*timetot/3;
+ecosystem1(VCF).. p_takeup(VCF)*total_production(VCF) =E= corn_buy(VCF)*barren_area(VCF)*0.8*1000*timetot/3;
+
+
+
+*ecosystem2.. p_takeup('9')*total_production('9') =E= corn_buy('9')*6.78*0.5*1000*timetot/3;
 *ecosystem3.. p_takeup('10')*total_production('10') =E= corn_buy('10')*9*0.5*1000*timetot/3;
 *ecosystem4.. p_takeup('17')*total_production('17') =E= corn_buy('17')*14.8*0.5*1000*timetot/3;
 *ecosystem5.. p_takeup('18')*total_production('18') =E= corn_buy('18')*9.8*0.5*1000*timetot/3;
 *ecosystem6.. p_takeup('19')*total_production('19') =E= corn_buy('19')*16.55*0.5*1000*timetot/3;
-ecosystem7.. p_takeup('20')*total_production('20') =E= corn_buy('20')*4.11*0.5*1000*timetot/3;
+*ecosystem7.. p_takeup('20')*total_production('20') =E= corn_buy('20')*4.11*0.5*1000*timetot/3;
 *ecosystem8.. p_takeup('21')*total_production('21') =E= corn_buy('21')*11.1*0.5*1000*timetot/3;
 *ecosystem9.. p_takeup('94')*total_production('94') =E= corn_buy('94')*21*0.5*1000*timetot/3;
 *ecosystem10.. p_takeup('96')*total_production('96') =E= corn_buy('96')*13*0.5*1000*timetot/3;
 
 
-ecosystem3(VCF)$(Ord(VCF) ne 9 and Ord(VCF) ne 20).. p_takeup(VCF) =E= 0;
+*ecosystem3(VCF)$(Ord(VCF) ne 9 and Ord(VCF) ne 20).. p_takeup(VCF) =E= 0;
 
 
 
@@ -348,7 +619,7 @@ impact3(VCF).. p_runoff2(VCF) =G= p_runoff(VCF) - p_takeup(VCF);
 
 *Adding the phosphorus runoff from the spillover corn in the first year. So that spillover is minimum
 *0.038 kg P per tonne of Corn yield.
-impact2.. final_p_runoff =E= sum[VCF,p_runoff2(VCF)] + sum[m,sum[VCS,spillover(m,VCS)]]*0.038 ;
+impact2.. final_p_runoff =E= sum[VCF,p_runoff2(VCF)] + (sum[m,sum[VCS,spillover(m,VCS)]]*0.038);
 
 ******Adding ecosystems*****
 *Subasin 1 as 195 km2 of wetland area.
@@ -361,14 +632,19 @@ impact2.. final_p_runoff =E= sum[VCF,p_runoff2(VCF)] + sum[m,sum[VCS,spillover(m
 **********************************Transportation*************************************************
 positive Variable transportation1(m,VCF,VCS),transportation2(m,VCS,EQB),transportation3(m,EQB,VCC);
 equation transport1,transport2,transport3;
+binary variable z_trans2(m,VCS,EQB);
+z_trans2.L(m,VCS,EQB) = 0;
 
 
 
 
 transport1(m,VCF,VCS).. transportation1(m,VCF,VCS) =E= farm_storage_X(m,VCF,VCS)*trans_cost2(VCF,VCS);
 
+*I need to add a binary mode to choose between train-truc combo and truck. 
+*transport2(m,VCS,EQB).. transportation2(m,VCS,EQB) =E= storage_refinery_X(m,VCS,EQB)*eq_trans_cost2(VCS,EQB);
 
-transport2(m,VCS,EQB).. transportation2(m,VCS,EQB) =E= storage_refinery_X(m,VCS,EQB)*eq_trans_cost2(VCS,EQB);
+transport2(m,VCS,EQB).. transportation2(m,VCS,EQB) =E= (1-z_trans2(m,VCS,EQB))*storage_refinery_X(m,VCS,EQB)*eq_trans_cost1(VCS,EQB) + storage_refinery_X(m,VCS,EQB)*eq_trans_cost2(VCS,EQB)*(z_trans2(m,VCS,EQB));
+
 
 *Have to add the spillover transportation also for the first year.
 transport3(m,EQB,VCC).. transportation3(m,EQB,VCC) =E= refinery_consumer_X(m,EQB,VCC)*eq_downstream(EQB,VCC);
@@ -416,6 +692,8 @@ display p_runoff2.L;
 display p_takeup.L;
 display ecosystem;
 display final_p_runoff.L;
+display z_trans2.L;
+display transportation2.L;
 
 parameter spillrunoff;
 
@@ -432,6 +710,8 @@ p2px(m,EQB,EQB1) = refinery_X.L(m,EQB,EQB1);
 p2px(m,VCS,EQB) = storage_refinery_X.L(m,VCS,EQB);
 p2px(m,EQB,VCC) = refinery_consumer_X.L(m,EQB,VCC);
 p2px(m,VCC,VCC) = ethanol_demand(m,VCC);
+
+
 
 
 parameter total_corn_flow;
@@ -568,20 +848,20 @@ put /;
 
 
 
-file fx4 /total_flow.txt/;
+file fx4 /total_p_flow.txt/;
 fx4.ps = 130;
 fx4.pw = 32767;
 fx4.nd = 0;
 fx4.pc = 5;
 put fx4
-Loop(m,
-put 'year';
-put m.tl;
+Loop(VCF,
+*put 'year';
+*put m.tl;
 put /;
-put deficit(m);
-put /;
-put /;
-put /;
+put p_runoff.L(VCF);
+*put /;
+*put /;
+*put /;
 );
 
 
@@ -713,6 +993,24 @@ put/;
 put/;
 put/;
 put/;
+);
+
+
+
+file fx11 /total_p_takeup.txt/;
+fx11.ps = 130;
+fx11.pw = 32767;
+fx11.nd = 0;
+fx11.pc = 5;
+put fx11
+Loop(VCF,
+*put 'year';
+*put m.tl;
+put /;
+put p_takeup.L(VCF);
+*put /;
+*put /;
+*put /;
 );
 
 
